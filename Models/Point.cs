@@ -8,8 +8,8 @@ public class Point
     public int XPos { get; set; }
     public int YPos { get; set; }
     public int Radius { get; set; }
-    public string Color { get; set; }
-    
+    public string Color { get; set; } = null!;
+
     [JsonPropertyName("comments")]
-    public List<Comment> CommentsUnderPoint { get; set; }
+    public List<Comment> CommentsUnderPoint { get; set; } = null!;
 }

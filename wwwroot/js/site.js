@@ -1,16 +1,49 @@
-﻿function DrawContainer() {
+﻿let points = [];
+
+function DrawContainer() {
     $.ajax({
         type: 'GET',
         url: '/Point/GetPoints',
-        success: function (point) {
-            DrawPoint(point);
+        success: function (newPoints) {
+            points = newPoints;
+            DrawPoints();
         },
         error: function () {
             alert('Data not found');
         }
     });
 }
-function DrawPoint(point){
+
+function DeletePoint(pointId) {
+    $.ajax({
+        type: "POST",
+        url: "/Point/DeletePoint",
+        data: {Id: pointId},
+        success: function () {
+            points = points.filter(function (obj) {
+                return obj.id !== pointId;
+            });
+
+            DrawPoints();
+        },
+        error: function () {
+            alert('Failed to delete point');
+        }
+    })
+}
+
+function AddRandomPoint() {
+    $.ajax({
+        type: "POST",
+        url: "/Point/AddRandomPoint",
+        success: function (point) {
+            points.push(point);
+            DrawPoints();
+        },
+    })
+}
+
+function DrawPoints() {
     var width = window.innerWidth;
     var height = window.innerHeight;
 
@@ -20,83 +53,105 @@ function DrawPoint(point){
         width: width,
         height: height
     });
-    
+
     //Создаем слой
     var layer = new Konva.Layer();
-    for (var i = 0; i < point.length; i++) {
+    for (var i = 0; i < points.length; i++) {
         var group = new Konva.Group();
         var circle = new Konva.Circle({
             //Задаем координаты
-            x: point[i].xPos, 
-            y: point[i].yPos, 
+            x: points[i].xPos,
+            y: points[i].yPos,
             //Задаем радиус
-            radius: point[i].radius,
+            radius: points[i].radius,
             //Задаем цвет
-            fill: point[i].color, 
+            fill: points[i].color,
             //задаем id
-            id: point[i].id,
+            id: points[i].id,
         })
         //Добавляем все точки в группу
         group.add(circle)
-        
-        //Вычисляем позицию по y для комментариев
-        var startPositionY = point[i].yPos + point[i].radius + 5;
 
-        for (var k = 0; k < point[i].comments.length; k++){
+        //Вычисляем позицию по y для комментариев
+        var startPositionY = points[i].yPos + points[i].radius + 5;
+
+        for (var k = 0; k < points[i].comments.length; k++) {
+            let text = new Konva.Text({
+                text: points[i].comments[k].text,
+                fontFamily: 'cursive',
+                fontSize: 20,
+                padding: 5,
+                fill: 'Green',
+                id: points[i].id,
+            });
+
             //Вычисляем позицию по x для комментариев 
-            var startPositionX = point[i].xPos - (point[i].comments[k].text.length * 6.1);
+            let startPositionX = points[i].xPos - text.width() / 2;
             var label = new Konva.Label({
                 x: startPositionX,
                 y: startPositionY,
             });
+            
             //Делаем, чтобы комментарии располагались друг под другом
             startPositionY += 30;
 
-            //Добавляем стиль тэга
+            //Добавляем тэг
             label.add(
                 new Konva.Tag({
-                    fill: point[i].comments[k].backgroundColor,
+                    fill: points[i].comments[k].backgroundColor,
                     stroke: "Grey",
                     opacity: 0.3,
-                    id: point[i].id,
+                    id: points[i].id,
                 })
             );
-            
-            //Добавляем стиль текста
+
+            //Добавляем текст
             label.add(
-                new Konva.Text({
-                    text: point[i].comments[k].text,
-                    fontFamily: 'cursive',
-                    fontSize: 20,
-                    padding: 5,
-                    fill: 'Green',
-                    id: point[i].id,
-                })
+                text
             );
+
             //Добавляем комментарии в группу
             group.add(label)
         }
+        
         //Добавляем группу в слой
         layer.add(group)
+        
         //Удаление точки по двойному клику
         circle.on('dblclick', function (e) {
-            var idDelete = e.currentTarget.attrs.id;
-            $.ajax({
-                url: "/Point/DeletePoint",
-                type: "post",
-                datatype: "text",
-                data: {Id: idDelete},
-                success: function (response) {
-                    if (response) {
-                    //ToDo визуальное удаление элементов
-                    }
-                    else {
-                        alert("Idi zanovo razbiraisya!")
-                    }
-                }
-            })
+            var pointId = e.currentTarget.attrs.id;
+            DeletePoint(pointId);
         })
     }
+
+    let addRandomPointButton = new Konva.Label({
+        x: 20,
+        y: 20,
+        opacity: 0.75
+    });
+    layer.add(addRandomPointButton);
+
+    addRandomPointButton.add(new Konva.Tag({
+        fill: 'black',
+        lineJoin: 'round',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: 10,
+        shadowOpacity: 0.5
+    }));
+
+    addRandomPointButton.add(new Konva.Text({
+        text: 'Add random point',
+        fontFamily: 'Calibri',
+        fontSize: 18,
+        padding: 5,
+        fill: 'white'
+    }));
+
+    addRandomPointButton.on('click', () => {
+        AddRandomPoint();
+    })
+
     //Добавляем слой в сцену
     stage.add(layer)
 }

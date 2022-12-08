@@ -6,31 +6,40 @@ namespace LamartTest.Controllers;
 
 public class PointController : Controller
 {
-    private readonly IRepository _repository;
+    private readonly IPointRepository _pointRepository;
 
-    public PointController(IRepository repository)
+    public PointController(IPointRepository pointRepository)
     {
-        _repository = repository;
+        _pointRepository = pointRepository;
     }
+
     public IActionResult HomePage()
     {
         return View();
     }
-        
+
     [HttpGet]
     public async Task<JsonResult> GetPoints()
     {
-        return Json(await _repository.GetPoints());
+        var points = await _pointRepository.GetPoints();
+        return Json(points);
     }
 
     [HttpPost]
-    public async Task<JsonResult> DeletePoint(int id)
+    public async Task<ActionResult> DeletePoint(int id)
     {
-        if (await _repository.DeletedPoint(id))
+        if (await _pointRepository.DeletePoint(id))
         {
-            return Json(true);
+            return Ok();
         }
-        return Json(false);
-    }
 
+        return BadRequest();
+    }
+    
+    [HttpPost]
+    public async Task<JsonResult> AddRandomPoint()
+    {
+        var point = await _pointRepository.AddRandomPoint();
+        return Json(point);
+    }
 }

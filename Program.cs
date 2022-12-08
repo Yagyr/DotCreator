@@ -4,8 +4,8 @@ using LamartTest.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMvc();
-builder.Services.AddDbContext<DbPoints>();
-builder.Services.AddScoped<IRepository, Repository>();
+builder.Services.AddDbContext<PointsDbContext>();
+builder.Services.AddScoped<IPointRepository, PointRepository>();
 
 var app = builder.Build();
 
