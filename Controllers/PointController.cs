@@ -12,21 +12,25 @@ public class PointController : Controller
     {
         _repository = repository;
     }
+    public IActionResult HomePage()
+    {
+        return View();
+    }
         
     [HttpGet]
     public async Task<JsonResult> GetPoints()
     {
         return Json(await _repository.GetPoints());
     }
-    public IActionResult HomePage()
-    {
-        return View();
-    }
 
-    // [HttpPost]
-    // public IActionResult RemovePoint()
-    // {
-    //     //TODO Delete points
-    // }
+    [HttpPost]
+    public async Task<JsonResult> DeletePoint(int id)
+    {
+        if (await _repository.DeletedPoint(id))
+        {
+            return Json(true);
+        }
+        return Json(false);
+    }
 
 }

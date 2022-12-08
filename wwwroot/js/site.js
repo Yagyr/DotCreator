@@ -33,10 +33,11 @@ function DrawPoint(point){
             radius: point[i].radius,
             //Задаем цвет
             fill: point[i].color, 
+            //задаем id
+            id: point[i].id,
         })
         //Добавляем все точки в группу
         group.add(circle)
-        
         
         //Вычисляем позицию по y для комментариев
         var startPositionY = point[i].yPos + point[i].radius + 5;
@@ -57,6 +58,7 @@ function DrawPoint(point){
                     fill: point[i].comments[k].backgroundColor,
                     stroke: "Grey",
                     opacity: 0.3,
+                    id: point[i].id,
                 })
             );
             
@@ -68,6 +70,7 @@ function DrawPoint(point){
                     fontSize: 20,
                     padding: 5,
                     fill: 'Green',
+                    id: point[i].id,
                 })
             );
             //Добавляем комментарии в группу
@@ -75,6 +78,24 @@ function DrawPoint(point){
         }
         //Добавляем группу в слой
         layer.add(group)
+        //Удаление точки по двойному клику
+        circle.on('dblclick', function (e) {
+            var idDelete = e.currentTarget.attrs.id;
+            $.ajax({
+                url: "/Point/DeletePoint",
+                type: "post",
+                datatype: "text",
+                data: {Id: idDelete},
+                success: function (response) {
+                    if (response) {
+                    //ToDo визуальное удаление элементов
+                    }
+                    else {
+                        alert("Idi zanovo razbiraisya!")
+                    }
+                }
+            })
+        })
     }
     //Добавляем слой в сцену
     stage.add(layer)
